@@ -1,0 +1,23 @@
+services:
+  oracle-db:
+    image: oracle-local  # Replace with your image name and tag
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      ORACLE_SID: MYORADB
+      ORACLE_PDB: MYORADB1
+      ORACLE_PWD: <PWD GOES HERE>  # Default password for SYS, SYSTEM, and other initial users
+      ORACLE_CHARACTERSET: AL32UTF8
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "sqlplus", "-silent", "sys/<PWD GOES HERE>//localhost:1521/MYORADB as sysdba", "EXIT"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  oracle-data:
+    external: true
+
