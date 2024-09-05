@@ -22,7 +22,7 @@ Don’t extract the zip. Instead, move it to this directory on the cloned repo:
 
 docker-images/OracleDatabase/SingleInstance/dockerfiles/19.3.0
 
-3. Go to Developer/oracle/docker-images/OracleDatabase/SingleInstance/dockerfiles
+3. Go to docker-images/OracleDatabase/SingleInstance/dockerfiles
 
 And now run:
 ./buildContainerImage.sh -e -v 19.3.0 -t oracle-local
