@@ -16,9 +16,10 @@ BEGIN
 
         -- If the user does not exist, create the user and grant privileges
         IF user_count = 0 THEN
-            EXECUTE IMMEDIATE 'CREATE USER MY_USER IDENTIFIED BY "Change_This_Pwd_123!"';
+            EXECUTE IMMEDIATE 'CREATE USER MY_USER IDENTIFIED BY ChangeMe123';
             EXECUTE IMMEDIATE 'GRANT DBA TO MY_USER';
             EXECUTE IMMEDIATE 'ALTER USER MY_USER QUOTA UNLIMITED ON users';
+            COMMIT;
         END IF;
     END;
 END;
