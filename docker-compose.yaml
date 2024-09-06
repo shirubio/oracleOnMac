@@ -1,13 +1,13 @@
 services:
   oracle-db:
-    image: oracle-local  # Replace with your image name and tag
+    image: oracle19  # Replace with your image name and tag
     ports:
       - "1521:1521"
       - "5500:5500"
     environment:
-      ORACLE_SID: MYORADB
-      ORACLE_PDB: MYORADB1
-      ORACLE_PWD: ChangeMe123  # Default password for SYS, SYSTEM, and other initial users
+      ORACLE_SID: MYORADB # Replace with your SID name
+      ORACLE_PDB: MYORADB1 # Replace with your PDB
+      ORACLE_PWD: ChangeMe123  # Password used for SYS, SYSTEM, and other initial users
       ORACLE_CHARACTERSET: AL32UTF8
     volumes:
       - oracle-data:/opt/oracle/oradata
