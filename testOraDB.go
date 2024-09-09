@@ -54,13 +54,13 @@ func main() {
 	log.Println(">>>>>>>>>>>>>>>>>> Doing some DB stuff")
 	timeToCreateTable := create(db)
 	timeToInserts := inserts(db)
-	timeToSelect := selects(db)
+	timeToSelect, total := selects(db, true)
 	timeToDropTable := drop(db)
 
 	log.Println("Time to connect: ", timeToConnect)
 	log.Println("Time to create table: ", timeToCreateTable)
 	log.Printf("Time to insert %d rows: %v\n", rowsToCreate, timeToInserts)
-	log.Printf("Time to select and print %d rows: %v\n", rowsToCreate, timeToSelect)
+	log.Printf("Time to select %d rows: %v with a total value of %d\n", rowsToCreate, timeToSelect, total)
 	log.Println("Time to drop table: ", timeToDropTable)
 }
 
@@ -115,7 +115,7 @@ func inserts(db *sql.DB) time.Duration {
 	return time.Since(t)
 }
 
-func selects(db *sql.DB) time.Duration {
+func selects(db *sql.DB, print bool) (time.Duration, int64) {
 	// Execute the query
 	t := time.Now()
 	rows, err := db.Query(selectSQL)
@@ -125,14 +125,20 @@ func selects(db *sql.DB) time.Duration {
 	defer rows.Close()
 
 	// Iterate through the rows and print each one
-	log.Println("Rows in table TEST101:")
+	if print {
+		log.Println("Rows in table TEST101:")
+	}
+	var total int64
 	for rows.Next() {
 		var id string
 		var anInt int
 		if err = rows.Scan(&id, &anInt); err != nil {
 			log.Fatalf("Error scanning row: %v", err)
 		}
-		log.Printf("ID: %s, AN_INT: %d\n", id, anInt)
+		if print {
+			log.Printf("ID: %s, AN_INT: %d\n", id, anInt)
+		}
+		total += int64(anInt)
 	}
 
 	// Check for any errors after the loop
@@ -140,7 +146,7 @@ func selects(db *sql.DB) time.Duration {
 		log.Fatalf("Error reading rows: %v", err)
 	}
 
-	return time.Since(t)
+	return time.Since(t), total
 }
 
 func drop(db *sql.DB) time.Duration {

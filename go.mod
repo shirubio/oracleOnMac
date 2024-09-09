@@ -1,4 +1,4 @@
-module example.com/oracle.database.interaction
+module oracle-on-mac
 
 go 1.22
 
