@@ -7,13 +7,13 @@ services:
     environment:
       ORACLE_SID: MYORADB # Replace with your SID name
       ORACLE_PDB: MYORADB1 # Replace with your PDB
-      ORACLE_PWD: ChangeMe123  # Password used for SYS, SYSTEM, and other initial users
+      ORACLE_PWD: My_Password1  # Password used for SYS, SYSTEM, and other initial users
       ORACLE_CHARACTERSET: AL32UTF8
     volumes:
       - oracle-data:/opt/oracle/oradata
       - ./init-scripts:/opt/oracle/scripts/startup
     healthcheck:
-      test: ["CMD", "sqlplus", "-silent", "sys/ChangeMe123//localhost:1521/MYORADB as sysdba", "EXIT"]
+      test: ["CMD", "sqlplus", "-silent", "sys/My_Password1//localhost:1521/MYORADB as sysdba", "EXIT"]
       interval: 30s
       timeout: 10s
       retries: 5

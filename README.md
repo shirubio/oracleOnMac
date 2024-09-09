@@ -5,6 +5,7 @@ Dependencies:
 - GIT
 - Docker (Desktop)
 - Some Database Client that supports Oracle (most JetBrains IDEs will do)
+- Go (if you want to run the Go example)
 
 Very recently, Oracle released the first version of an Oracle DB compatible with ARM64 architecture. This is good news to users of Macs with Apple silicon.
 Only Oracle 19 was ported as of April 2024.
@@ -30,14 +31,19 @@ Now, let’s bring it up!
 4. Create a Docker volume to hold the data, so it survives the container restart:
 docker volume create oracle-data       
 
-5. Run the “docker-compose.yaml” file in this project: docker compose up -d  
-**Attention:** The first time you run the container, it will take a long while to start. On a MacBook Air M3 with 24GB of RAM, it took about 10 minutes.  
+
+5. Run the “docker-compose.yaml” file in this project:  
+docker compose up -d  
+
+**Attention:** The first time you run the container, it will take a long while to start. On a MacBook Air M3 it took over 10 minutes.  
 The other times it will be much faster. A few seconds.
 
-6. Connect to Oracle as SYSTEM and create a new user to play around. Look at the “create_user.sql” file in this project.
-(Use 'create-user.sql' as an example)
+6. Connect to Oracle as SYSTEM and play around. 
+
 
 7. Connect to the database using your favorite client. I use DataGrip, but you can use SQL Developer, SQLcl, or any other DB client.
+
+8. Run "go run testOraDB.go" to test the connection from Go.
 
 Have fun!
 =
