@@ -8,7 +8,7 @@ BEGIN
 
         -- If the user does not exist, create the user and grant privileges
         IF user_count = 0 THEN
-            EXECUTE IMMEDIATE 'CREATE USER MY_USER IDENTIFIED BY My_Password1';
+            EXECUTE IMMEDIATE 'CREATE USER MY_USER IDENTIFIED BY "My_Password123!"';
             EXECUTE IMMEDIATE 'GRANT DBA TO MY_USER';
             EXECUTE IMMEDIATE 'ALTER USER MY_USER QUOTA UNLIMITED ON users';
             COMMIT;

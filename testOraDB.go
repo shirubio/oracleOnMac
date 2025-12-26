@@ -27,7 +27,7 @@ func init() {
 		port:    "1521",
 		service: "MYORADB1",
 		user:    "MY_USER",
-		pwd:     "My_Password1",
+		pwd:     "My_Password123!",
 	}
 	connectStr = "oracle://" + oraDB.user + ":" + oraDB.pwd + "@" + oraDB.host + ":" + oraDB.port + "/" + oraDB.service
 }
@@ -36,7 +36,7 @@ const createTable = "CREATE TABLE TEST101 (ID VARCHAR2(100) PRIMARY KEY, AN_INT 
 const insert = "INSERT INTO TEST101 ( ID , AN_INT) VALUES (:uuid_key, :theInt)"
 const selectSQL = "SELECT * FROM TEST101"
 const dropTable = "DROP TABLE TEST101"
-const rowsToCreate = 1000
+const rowsToCreate = 1_000
 
 var connectStr string
 
@@ -103,7 +103,7 @@ func inserts(db *sql.DB) time.Duration {
 	for i := 0; i < rowsToCreate; i++ {
 		// Generate random UUID and integer
 		uuidValue := uuid.New().String()
-		randomInt := rand.Intn(100000) // Random integer between 0 and 99999
+		randomInt := rand.Intn(100_000) // Random integer between 0 and 99_999
 
 		// Execute the insert statement
 		_, err = stmt.Exec(uuidValue, randomInt)
@@ -111,7 +111,7 @@ func inserts(db *sql.DB) time.Duration {
 			log.Fatalf("Error inserting row: %v", err)
 		}
 	}
-	log.Println("1000 random rows inserted successfully!")
+	log.Println("10000 random rows inserted successfully!")
 	return time.Since(t)
 }
 

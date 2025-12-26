@@ -1,24 +1,142 @@
+version: "3.9"
+
 services:
   oracle-db:
-    image: oracle19  # Replace with your image name and tag
+    image: oracle-local
+    container_name: oracle-db-19c
+    hostname: oracle-db
+
     ports:
       - "1521:1521"
       - "5500:5500"
+      - "2484:2484" # TCPS listener port (only meaningful if TCPS is enabled)
+
+    # Hard resource caps
+    # - Limit Oracle to max 2 GB RAM
+    # - Limit Oracle to ~2 Apple Silicon cores OR ~2 x86 CPU threads
+    mem_limit: 2g
+    cpus: "2.0"
+
     environment:
-      ORACLE_SID: MYORADB # Replace with your SID name
-      ORACLE_PDB: MYORADB1 # Replace with your PDB
-      ORACLE_PWD: My_Password1  # Password used for SYS, SYSTEM, and other initial users
-      ORACLE_CHARACTERSET: AL32UTF8
+      ORACLE_SID: "MYORADB"
+      ORACLE_PDB: "MYORADB1"
+      ORACLE_PWD: "Password123!"
+
+      # Keep Oracle memory strictly under container limits (values in MB)
+      AUTO_MEM_CALCULATION: "false"
+      INIT_SGA_SIZE: "1536"
+      INIT_PGA_SIZE: "384"
+
+      # Align Oracle CPU usage with container limits
+      INIT_CPU_COUNT: "2"
+      INIT_PROCESSES: "300"
+
+      ORACLE_EDITION: "enterprise"
+      ORACLE_CHARACTERSET: "AL32UTF8"
+
+      # Dev default: archive log disabled (less IO, smaller footprint)
+      ENABLE_ARCHIVELOG: "false"
+
+      # TCPS is disabled by default for dev simplicity.
+      # If ENABLE_TCPS=true:
+      #   - TCPS_CERTS_LOCATION must be set
+      #   - The corresponding volume must be mounted (see volumes section below)
+      ENABLE_TCPS: "false"
+      # TCPS_CERTS_LOCATION: "/opt/oracle/tcps-certs"
+
+    ulimits:
+      nofile:
+        soft: 1024
+        hard: 65536
+      nproc:
+        soft: 2047
+        hard: 16384
+      stack:
+        soft: 10485760
+        hard: 33554432
+      memlock:
+        soft: 3221225472
+        hard: 3221225472
+
+    shm_size: "1g"
+    restart: unless-stopped
+
     volumes:
+      # Persistent Oracle data.
+      # Deleting this volume wipes the database and causes ALL setup scripts to run again.
       - oracle-data:/opt/oracle/oradata
-      - ./init-scripts:/opt/oracle/scripts/startup
-    healthcheck:
-      test: ["CMD", "sqlplus", "-silent", "sys/My_Password1//localhost:1521/MYORADB as sysdba", "EXIT"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+
+      # Setup scripts:
+      # - Run ONCE, only when the database is created for the first time
+      # - Typical usage: create schemas/users, grant privileges, seed reference data
+      - ./scripts/setup:/opt/oracle/scripts/setup
+
+      # Startup scripts:
+      # - Run EVERY time the container starts
+      # - Must be idempotent and non-destructive
+      # - Typical usage: sanity checks, lightweight config, logging
+      - ./scripts/startup:/opt/oracle/scripts/startup
+
+      # Only required when ENABLE_TCPS=true
+      # - ./tcps-certs:/opt/oracle/tcps-certs:ro
 
 volumes:
   oracle-data:
     external: true
 
+#Parameters:
+#  --name:        The name of the container (default: auto generated).
+#  -p:            The port mapping of the host port to the container port.
+#    The following ports are exposed: 1521 (Oracle Listener), 5500 (OEM Express), 2484 (TCPS Listener Port if TCPS is enabled).
+#  --ulimit:      Resource limits. Update according to Oracle Database documentation.
+#  -e ORACLE_SID: The Oracle Database SID that should be used (default for 26ai Free Edition: FREE; all others, ORCLCDB).
+#                   Note: The ORACLE_SID for 11g/18c Express and 26ai Free Editions cannot be changed.
+#  -e ORACLE_PDB: The Oracle Database PDB name that should be used (default for 26ai Free Edition: FREEPDB1; all others, ORCLPDB1).
+#                   Note: The ORACLE_PDB for 26ai Free Edition cannot be changed.
+#  -e ORACLE_PWD: The Oracle Database SYS, SYSTEM and PDBADMIN password (default: auto generated).
+#  -e INIT_SGA_SIZE:
+#    The total memory in MB that should be used for all SGA components (optional).
+#    Supported by Oracle Database 19.3 onwards.
+#  -e INIT_PGA_SIZE:
+#    The target aggregate PGA memory in MB that should be used for all server processes attached to the instance (optional).
+#    Supported by Oracle Database 19.3 onwards.
+#  -e INIT_CPU_COUNT:
+#    Specifies the number of CPUs available for Oracle Database to use.
+#    On CPUs with multiple CPU threads, it specifies the total number of available CPU threads (optional).
+#  -e INIT_PROCESSES:
+#    Specifies the maximum number of operating system user processes that can simultaneously connect to Oracle Database.
+#    Its value should allow for all background processes such as locks, job queue processes, and parallel execution processes (optional).
+#  -e AUTO_MEM_CALCULATION:
+#    To enable auto calculation of the DBCA total memory limit during the database creation, based on
+#    the available memory of the container, which can be constrained using the `docker run --memory`
+#    option. If set to 'false', the total memory will be set as 2GB (default: true).
+#    Note that this parameter is not taken into account if the `-e INIT_SGA_SIZE` or `-e INIT_PGA_SIZE`
+#    are set.
+#    Supported by Oracle Database 19.3 onwards.
+#  -e ORACLE_EDITION:
+#    The Oracle Database Edition (enterprise/standard).
+#    Supported by Oracle Database 19.3 onwards.
+#  -e ORACLE_CHARACTERSET:
+#    The character set to use when creating the database (default: AL32UTF8).
+#  -e ENABLE_ARCHIVELOG:
+#    To enable archive log mode when creating the database (default: false).
+#    Supported by Oracle Database 19.3 onwards.
+#  -e ENABLE_FORCE_LOGGING:
+#    To enable force logging mode when creating the database (default: false).
+#    Supported by Oracle Database 26ai onwards.
+#  -e ENABLE_TCPS:
+#    To enable TCPS connections for Oracle Database.
+#    Supported by Oracle Database 19.3 onwards.
+#  -e TCPS_CERTS_LOCATION:
+#    Location of user provided SSL certificates for TCPS connection
+#    Supported by Oracle Database 19.3 onwards.
+#  -v /opt/oracle/oradata
+#  The data volume to use for the database.
+#  Has to be writable by the Unix "oracle" (uid: 54321) user inside the container.
+#  If omitted the database will not be persisted over container recreation.
+#  -v /opt/oracle/scripts/startup | /docker-entrypoint-initdb.d/startup
+#  Optional: A volume with custom scripts to be run after database startup.
+#  For further details see the "Running scripts after setup and on startup" section below.
+#  -v /opt/oracle/scripts/setup | /docker-entrypoint-initdb.d/setup
+#  Optional: A volume with custom scripts to be run after database setup.
+#  For further details see the "Running scripts after setup and on startup" section below.
