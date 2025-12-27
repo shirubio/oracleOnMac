@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -11,25 +12,17 @@ import (
 	_ "github.com/sijms/go-ora/v2"
 )
 
-type OraParams struct {
-	host    string
-	port    string
-	service string
-	user    string
-	pwd     string
-}
+const (
+	oraHost    = "localhost"
+	oraPort    = "1521"
+	oraService = "MYORADB1"
+	oraUser    = "MY_USER"
+	oraPwd     = "My_Password123!"
+)
 
-var oraDB OraParams
-
-func init() {
-	oraDB = OraParams{
-		host:    "localhost",
-		port:    "1521",
-		service: "MYORADB1",
-		user:    "MY_USER",
-		pwd:     "My_Password123!",
-	}
-	connectStr = "oracle://" + oraDB.user + ":" + oraDB.pwd + "@" + oraDB.host + ":" + oraDB.port + "/" + oraDB.service
+func oracleConnectString() string {
+	// oracle://user:pwd@host:port/service
+	return fmt.Sprintf("oracle://%s:%s@%s:%s/%s", oraUser, oraPwd, oraHost, oraPort, oraService)
 }
 
 const createTable = "CREATE TABLE TEST101 (ID VARCHAR2(100) PRIMARY KEY, AN_INT NUMBER(5))"
@@ -38,9 +31,10 @@ const selectSQL = "SELECT * FROM TEST101"
 const dropTable = "DROP TABLE TEST101"
 const rowsToCreate = 1_000
 
-var connectStr string
-
 func main() {
+	start := time.Now()
+	rand.Seed(time.Now().UnixNano())
+
 	log.Println(">>>>>>>>>>>>>>>>>> Connecting to local Oracle Database")
 
 	db, timeToConnect := connect()
@@ -54,7 +48,7 @@ func main() {
 	log.Println(">>>>>>>>>>>>>>>>>> Doing some DB stuff")
 	timeToCreateTable := create(db)
 	timeToInserts := inserts(db)
-	timeToSelect, total := selects(db, true)
+	timeToSelect, total := selects(db, false)
 	timeToDropTable := drop(db)
 
 	log.Println("Time to connect: ", timeToConnect)
@@ -62,11 +56,12 @@ func main() {
 	log.Printf("Time to insert %d rows: %v\n", rowsToCreate, timeToInserts)
 	log.Printf("Time to select %d rows: %v with a total value of %d\n", rowsToCreate, timeToSelect, total)
 	log.Println("Time to drop table: ", timeToDropTable)
+	log.Println("Total runtime: ", time.Since(start))
 }
 
 func connect() (*sql.DB, time.Duration) {
 	t := time.Now()
-	db, err := sql.Open("oracle", connectStr)
+	db, err := sql.Open("oracle", oracleConnectString())
 	if err != nil {
 		log.Fatalf("error connecting to database: %v", err)
 	}
@@ -111,7 +106,7 @@ func inserts(db *sql.DB) time.Duration {
 			log.Fatalf("Error inserting row: %v", err)
 		}
 	}
-	log.Println("10000 random rows inserted successfully!")
+	log.Printf("%d random rows inserted successfully!\n", rowsToCreate)
 	return time.Since(t)
 }
 
