@@ -33,7 +33,6 @@ const rowsToCreate = 1_000
 
 func main() {
 	start := time.Now()
-	rand.Seed(time.Now().UnixNano())
 
 	log.Println(">>>>>>>>>>>>>>>>>> Connecting to local Oracle Database")
 
@@ -93,7 +92,12 @@ func inserts(db *sql.DB) time.Duration {
 	if err != nil {
 		log.Fatalf("Error preparing statement: %v\n", err)
 	}
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			log.Fatalf("Error closing statement: %v", err)
+		}
+	}(stmt)
 
 	for i := 0; i < rowsToCreate; i++ {
 		// Generate random UUID and integer
@@ -117,7 +121,12 @@ func selects(db *sql.DB, print bool) (time.Duration, int64) {
 	if err != nil {
 		log.Fatalf("Error executing SELECT: %v", err)
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatalf("Error closing rows: %v", err)
+		}
+	}(rows)
 
 	// Iterate through the rows and print each one
 	if print {
