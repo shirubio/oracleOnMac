@@ -1,50 +1,123 @@
-How to run Oracle Databases on Macs with Apple silicon CPUs
-=
+# Running Oracle Database 19c on Apple Silicon Macs (Local Dev)
 
-Dependencies:
-- GIT
-- Docker (Desktop)
-- Some Database Client that supports Oracle (most JetBrains IDEs will do)
-- Go (if you want to run the Go example)
+This guide explains how to run **Oracle Database 19c (ARM64)** locally
+on **Apple Silicon Macs** using Docker.
 
-Very recently, Oracle released the first version of an Oracle DB compatible with ARM64 architecture. This is good news to users of Macs with Apple silicon.
-Only Oracle 19 was ported as of April 2024.
+This setup is intended for **local development only**: - No HA - No
+backups - No hardening - Just a reproducible, reasonably realistic
+Oracle DB for full-stack dev work
 
-To run this you have to follow very simple steps:
+------------------------------------------------------------------------
 
-1. Clone the repository oracle/docker-images:  
-https://github.com/oracle/docker-images
+## Prerequisites
 
-2. download the file "LINUX.ARM64_1919000_db_home.zip" from here:  
+You will need:
+
+-   **Git**
+-   **Docker Desktop** (Apple Silicon build, Docker Desktop 4.x+
+    recommended)
+-   **An Oracle-capable DB client**\
+    (Most JetBrains IDEs work well)
+-   **Java 17+** *(optional, for the Java example)*
+-   **Go** *(optional, for the Go example)*
+
+### System expectations
+
+-   Apple Silicon Mac (M1/M2/M3/M4)
+-   macOS 13+ recommended
+-   \~20--30 GB free disk space
+-   Be patient the first time 🙂
+
+------------------------------------------------------------------------
+
+## A note on Oracle + ARM64
+
+As of **April 2024**, **Oracle Database 19c** is the only production
+Oracle Database release officially available for **Linux ARM64**.
+
+------------------------------------------------------------------------
+
+## Step 1 -- Clone Oracle's Docker images repo
+
+``` bash
+git clone https://github.com/oracle/docker-images.git
+```
+
+------------------------------------------------------------------------
+
+## Step 2 -- Download the Oracle 19c ARM64 binary
+
+Download **LINUX.ARM64_1919000_db_home.zip** from Oracle and move it to:
+``` text
+docker-images/OracleDatabase/SingleInstance/dockerfiles/19.3.0/
+```
 https://www.oracle.com/database/technologies/oracle19c-linux-arm64-downloads.html#license-lightbox
 
-**Don’t extract the zip.**  
-Instead, move it to this directory on the cloned repo: docker-images/OracleDatabase/SingleInstance/dockerfiles/19.3.0
+**Do not unzip the file. Do not commit it.**
 
-3. Go to docker-images/OracleDatabase/SingleInstance/dockerfiles
+------------------------------------------------------------------------
 
-And now run:  
+## Step 3 -- Build the Docker image
+
+``` bash
+cd docker-images/OracleDatabase/SingleInstance/dockerfiles
 ./buildContainerImage.sh -e -v 19.3.0 -t oracle-local
+```
 
-Now, let’s bring it up!
+------------------------------------------------------------------------
 
-4. Create a Docker volume to hold the data, so it survives the container restart:
-docker volume create oracle-data       
+## Step 4 -- Initialize the database volume
 
+``` bash
+./init.sh
+```
 
-5. Run the “docker-compose.yaml” file in this project:  
-docker compose up -d  
+This deletes and recreates the `oracle-data` Docker volume.
 
-**Attention:** The first time you run the container, it will take a long while to start. On a MacBook Air M3 it took over 10 minutes.  
-The other times it will be much faster. A few seconds.
+------------------------------------------------------------------------
 
-6. Connect to Oracle as SYSTEM and play around. 
+## Step 5 -- Start Oracle
 
+``` bash
+./start.sh
+```
 
-7. Connect to the database using your favorite client. I use DataGrip, but you can use SQL Developer, SQLcl, or any other DB client.
+First startup can take 10+ minutes. Subsequent starts are fast.
 
-8. Run "go run testOraDB.go" to test the connection from Go.
+------------------------------------------------------------------------
 
-Have fun!
-=
+## Step 6 -- Connect to Oracle
 
+Typical defaults: - Host: `localhost` - Port: `1521` - Service: your PDB
+name - User: `SYS`, `SYSTEM`, or app user
+
+------------------------------------------------------------------------
+
+## Setup vs Startup scripts
+
+### scripts/setup
+
+-   Run once
+-   Used for schema/user creation and seed data
+
+### scripts/startup
+
+-   Run every container start
+-   Must be idempotent
+
+Deleting the data volume triggers setup again.
+
+------------------------------------------------------------------------
+
+## Resetting everything
+
+``` bash
+./init.sh
+./start.sh
+```
+
+------------------------------------------------------------------------
+
+## Final notes
+
+This setup is meant to be simple, reproducible, and safe to reset.

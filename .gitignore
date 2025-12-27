@@ -8,6 +8,7 @@
 *.so
 *.dylib
 testOraDB
+oracle-on-mac
 
 # Test binary, built with `go test -c`
 *.test
