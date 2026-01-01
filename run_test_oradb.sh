@@ -4,7 +4,7 @@ set -euo pipefail
 # --- Configuration (override via environment variables if desired) ---
 : "${ORA_HOST:=localhost}"
 : "${ORA_PORT:=1521}"
-: "${ORA_SERVICE:=MYORADB1}"
+: "${ORA_SERVICE:=MYORAPDB1}"
 : "${ORA_USER:=MY_USER}"
 : "${ORA_PWD:=My_Password123!}"
 : "${ROWS_TO_CREATE:=1000}"

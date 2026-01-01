@@ -8,7 +8,7 @@ public class TestOraDB {
     // --- Oracle connection parameters (match your Go defaults) ---
     private static final String ORA_HOST = env("ORA_HOST", "localhost");
     private static final String ORA_PORT = env("ORA_PORT", "1521");
-    private static final String ORA_SERVICE = env("ORA_SERVICE", "MYORADB1");
+    private static final String ORA_SERVICE = env("ORA_SERVICE", "MYORAPDB1");
     private static final String ORA_USER = env("ORA_USER", "MY_USER");
     private static final String ORA_PWD = env("ORA_PWD", "My_Password123!");
 

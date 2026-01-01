@@ -17,7 +17,7 @@ services:
 
     environment:
       ORACLE_SID: "MYORADB"
-      ORACLE_PDB: "MYORADB1"
+      ORACLE_PDB: "MYORAPDB1"
       ORACLE_PWD: "Password123!"
 
       # Keep Oracle memory strictly under container limits (values in MB)

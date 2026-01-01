@@ -15,7 +15,7 @@ import (
 const (
 	oraHost    = "localhost"
 	oraPort    = "1521"
-	oraService = "MYORADB1"
+	oraService = "MYORAPDB1"
 	oraUser    = "MY_USER"
 	oraPwd     = "My_Password123!"
 )
