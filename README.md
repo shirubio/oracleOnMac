@@ -57,6 +57,18 @@ https://www.oracle.com/database/technologies/oracle19c-linux-arm64-downloads.htm
 
 ------------------------------------------------------------------------
 
+## Step 2b (for X86 machines) -- Download the Oracle 19c x86-64 binary 
+
+Download **LINUX.X64_193000_db_home.zip** from Oracle and move it to:
+``` text
+docker-images/OracleDatabase/SingleInstance/dockerfiles/19.3.0/
+```
+https://www.oracle.com/database/technologies/oracle19c-linux-downloads.html
+
+**Do not unzip the file. Do not commit it.**
+
+------------------------------------------------------------------------
+
 ## Step 3 -- Build the Docker image
 
 ``` bash
